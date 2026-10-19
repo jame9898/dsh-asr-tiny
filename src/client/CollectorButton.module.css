@@ -1,0 +1,192 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 状态提示浮层：录音/识别/保存的即时反馈（错误红色 alert / 成功绿色 status） */
+.noticeOk,
+.noticeError {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 340px;
+  min-width: 120px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  z-index: 30;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.noticeOk {
+  background: #14301c;
+  color: #7ee2a3;
+}
+
+.noticeError {
+  background: #3d1f21;
+  color: #ffb4b8;
+}
+
+/* 工具组：与 Harness 原生 28px 圆形控件（+ / 发送）同尺寸，去掉外层胶囊底色与边框，
+   只留按钮自身的 hover 反馈，视觉上更融入输入栏。 */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* 按钮彻底去除原生方形焦点/激活框（appearance 重置 + !important 防全局样式覆盖） */
+.btn,
+.btnActive,
+.btnSaved {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary, #6b7280);
+  cursor: pointer;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover, rgba(0, 0, 0, 0.06));
+  color: var(--dsw-alias-label-primary, #111827);
+}
+
+.btn:active:not(:disabled),
+.btnActive:active:not(:disabled),
+.btnSaved:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.btn:disabled,
+.btnActive:disabled,
+.btnSaved:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn:focus,
+.btnActive:focus,
+.btnSaved:focus,
+.btn:focus-visible,
+.btnActive:focus-visible,
+.btnSaved:focus-visible {
+  outline: none !important;
+  box-shadow: none;
+}
+
+.btn::-moz-focus-inner,
+.btnActive::-moz-focus-inner,
+.btnSaved::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+/* 录音中：红色圆底 + 呼吸式外圈涟漪，内容替换为跳动的音量条 */
+.btnActive {
+  color: #fff;
+  background: var(--dsw-alias-state-error-primary, #e5484d);
+  animation: ripple 1.8s ease-out infinite;
+}
+
+/* 保存成功：淡绿底反馈 */
+.btnSaved {
+  color: var(--dsw-alias-state-business-primary, #1a7f37);
+  background: rgba(26, 127, 55, 0.12);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* 三根跳动的音量条：比绕圈圆点更直观地表达“正在收音” */
+.eq {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 16px;
+  height: 12px;
+}
+
+.eq i {
+  display: block;
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: currentColor;
+  transform: scaleY(0.35);
+  animation: eq-bounce 0.9s ease-in-out infinite;
+}
+
+.eq i:nth-child(2) {
+  animation-delay: -0.15s;
+}
+
+.eq i:nth-child(3) {
+  animation-delay: -0.3s;
+}
+
+/* 识别中：跟随按钮文字色的环形进度 */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes eq-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.45);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 6px rgba(229, 72, 77, 0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

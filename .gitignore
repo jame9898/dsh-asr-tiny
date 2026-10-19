@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+
+# pnpm local store
+.pnpm-store/
+
+# build / test output
+dist/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# archives
+*.tgz
+*.tar.gz
+
+# logs
+*.log
+
+# python (reference service)
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# sample data written by the reference service (personal recordings - never commit)
+examples/asr-service/data/
+
+# environment files
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# scratch
+_tmp*

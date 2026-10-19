@@ -1,0 +1,86 @@
+{
+  "name": "dsh-plugin-asr-zh-tiny",
+  "version": "0.2.0",
+  "description": "一个较小的中文语音识别插件：既能把语音转成文字，也能把录音和校正文本保存为训练样本，用于微调你自己的语音模型。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "lib/client.js",
+    "lib/index.js",
+    "lib/config.js",
+    "cordis.patch.yml",
+    "src",
+    "examples",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node -e \"fs.rmSync('lib',{recursive:true,force:true})\" && tsc -p tsconfig.json && tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test \"tests/*.test.mjs\""
+  },
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "voice",
+    "moonshine",
+    "asr",
+    "finetune",
+    "client-plugin"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": ">=4.0.1-rc.1 <4.1.0",
+    "@deepseek-ai/dsh-client-locale": ">=0.1.0-rc.3 <0.3.0",
+    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.3 <0.3.0",
+    "@deepseek-ai/dsh-client-ui-conversation": ">=0.1.0-rc.3 <0.3.0",
+    "@deepseek-ai/dsh-client-ui-slots": ">=0.1.0-rc.3 <0.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": { "optional": true },
+    "@deepseek-ai/dsh-client-locale": { "optional": true },
+    "@deepseek-ai/dsh-client-runtime": { "optional": true },
+    "@deepseek-ai/dsh-client-ui-conversation": { "optional": true },
+    "@deepseek-ai/dsh-client-ui-slots": { "optional": true },
+    "react": { "optional": true },
+    "react-dom": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "~18.3.1",
+    "@types/react-dom": "~18.3.1",
+    "lightningcss": "^1.32.0",
+    "react": "^18.2.0",
+    "react-dom": "18.2.0",
+    "tsdown": "^0.22.2",
+    "typescript": "^5.6.0"
+  },
+  "packageManager": "pnpm@9.15.9"
+}
