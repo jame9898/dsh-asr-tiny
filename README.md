@@ -149,6 +149,30 @@ D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
   D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
 ```
 
+### Upgrade an existing install
+
+A desktop profile keeps its own copy under `node_modules`, and pnpm caches `file:` installs. Just
+re-running `pnpm install` is **not enough**: the old copy must be removed first, or the previous
+version keeps loading.
+
+```powershell
+# 1. update the source (git pull, or replace the folder)
+# 2. reinstall this one package
+Remove-Item "<profile>\node_modules\dsh-plugin-asr-zh-tiny" -Recurse -Force
+D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
+  D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
+```
+
+Or run the bundled helper — it does exactly that and prints the installed version:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\upgrade.ps1
+```
+
+Then restart the client. The plugin page shows the installed version; the current release is `0.2.1`.
+Upgrading leaves your data alone (ASR URL is stored in `localStorage`, samples live in the service's
+`data/` directory).
+
 ### Install with an AI agent
 
 The repository is self-contained: `lib/` is committed, so an install needs **no build step**.
@@ -158,6 +182,8 @@ Hand an agent this checklist:
    `~/.dsh/profiles/desktop`.
 2. **Register the plugin.** Add the dependency and bundle entries shown above.
 3. **Install.** Run the bundled-runtime `pnpm install --ignore-scripts` command above.
+   *Already installed?* Delete `node_modules/dsh-plugin-asr-zh-tiny` first — pnpm's `file:` cache
+   otherwise keeps the old bundle. `scripts/upgrade.ps1` does this in one step.
 4. **Restart** the client so the profile is reloaded.
 5. **Verify** with the checklist below.
 6. **Optionally** enable host auto-start in `cordis.patch.yml` (see Configuration).

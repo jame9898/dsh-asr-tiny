@@ -139,6 +139,28 @@ D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
   D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
 ```
 
+### 升级已安装的版本
+
+桌面 profile 会把插件复制到自己的 `node_modules` 下，而 pnpm 对 `file:` 依赖有缓存，
+**只重跑 `pnpm install` 不会生效**——必须先把旧副本删掉，否则加载的仍是旧版本。
+
+```powershell
+# 1. 更新源码（git pull，或直接替换文件夹）
+# 2. 只重装这一个包
+Remove-Item "<profile>\node_modules\dsh-plugin-asr-zh-tiny" -Recurse -Force
+D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
+  D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
+```
+
+或者直接跑仓库自带的脚本（等价于上面两步，并打印安装后的版本）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\upgrade.ps1
+```
+
+然后重启客户端。插件页会显示已安装版本，当前发布版是 `0.2.1`。
+升级不会动你的数据：ASR 地址存在 `localStorage`，录音样本在服务的 `data/` 目录里。
+
 ### 交给 AI 工具安装
 
 仓库是自包含的（`lib/` 已提交，安装**不需要构建**）。把下面这份清单交给 AI 代理即可：
@@ -147,6 +169,8 @@ D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
    `~/.dsh/profiles/desktop`。
 2. **注册插件**：按上面的 JSON 增加 dependency 与 bundle。
 3. **安装**：执行上面的客户端自带 pnpm 命令（带 `--ignore-scripts`）。
+   **如果之前装过**：先删掉 `node_modules/dsh-plugin-asr-zh-tiny`，否则 pnpm 的 `file:` 缓存会让旧 bundle 继续生效；
+   `scripts/upgrade.ps1` 已把这一步封装好。
 4. **重启**客户端，让 profile 重新加载。
 5. **按下文清单验证**。
 6. **可选**：在 `cordis.patch.yml` 里开启 host 端自动拉起服务（见「配置」）。
