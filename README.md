@@ -1,6 +1,6 @@
 # dsh-plugin-asr-zh-tiny
 
-[![DSH](https://img.shields.io/badge/DSH-%3E%3D0.1.0--rc.3%20%3C%3D0.2.1--rc.2-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
+[![DSH](https://img.shields.io/badge/DSH-%3C%3D0.2.1--rc.2-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 English | [中文](./README.zh.md)
@@ -35,7 +35,7 @@ transcripts as training samples for fine-tuning your own speech model.
 
 ## Requirements
 
-- DSH `>=0.1.0-rc.3 <=0.2.1-rc.2` — desktop client 0.2.x.
+- DSH `<=0.2.1-rc.2` — desktop client 0.2.x.
 - Node.js `^22.19.0 || >=24.0.0`.
 - A local ASR service implementing the HTTP contract below, by default at
   `http://127.0.0.1:8000`.
@@ -120,7 +120,7 @@ Restart the client to load the profile; afterwards the plugin loads on every sta
 bundles are polled for changes, so rebuilding + reinstalling usually hot-reloads without a restart.
 
 > DSH 0.2 validates a plugin's `peerDependencies` ranges (optional peers included). This plugin
-> declares `>=0.1.0-rc.3 <=0.2.1-rc.2` for the DSH client packages — up to the current release.
+> declares `<=0.2.1-rc.2` for the DSH client packages — up to the current release.
 > When DSH ships a newer version, widen the upper bound and reinstall; otherwise the plugin page
 > marks it incompatible and refuses to load it.
 
@@ -173,7 +173,7 @@ Hand an agent this checklist:
 
 | Symptom | Cause / fix |
 | :--- | :--- |
-| Plugin marked **incompatible / 异常** | The DSH version is outside the declared peer ranges (`>=0.1.0-rc.3 <=0.2.1-rc.2`). Widen them and reinstall. |
+| Plugin marked **incompatible / 异常** | The DSH version is outside the declared peer ranges (`<=0.2.1-rc.2`). Widen them and reinstall. |
 | No capsule in the composer | The profile was not reloaded: restart the client, and check `dsh.profile.bundles` contains `dsh-plugin-asr-zh-tiny`. |
 | Red notice “识别失败… / is the local ASR service running?” | `/health` is not answering. Start the service (see [`examples/asr-service`](./examples/asr-service/README.md)). |
 | Recording works but requests time out | The service is hung, or the settings card points at the wrong URL. |
