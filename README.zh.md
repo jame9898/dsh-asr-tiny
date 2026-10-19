@@ -1,6 +1,6 @@
 # dsh-plugin-asr-zh-tiny
 
-[![DSH](https://img.shields.io/badge/DSH-%3E%3D0.1.0--rc.3%20%3C0.3.0-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
+[![DSH](https://img.shields.io/badge/DSH-%3E%3D0.1.0--rc.3%20%3C%3D0.2.1--rc.2-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 [English](./README.md) | 中文
@@ -30,7 +30,7 @@
 
 ## 前置条件
 
-- DSH `>=0.1.0-rc.3 <0.3.0` —— 桌面客户端 0.2.x。
+- DSH `>=0.1.0-rc.3 <=0.2.1-rc.2` —— 桌面客户端 0.2.x。
 - Node.js `^22.19.0 || >=24.0.0`。
 - 一个实现下列 HTTP 接口的本地 ASR 服务，默认地址 `http://127.0.0.1:8000`。
 
@@ -111,8 +111,8 @@ D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
 通常重新构建 + 重装后无需重启。
 
 > DSH 0.2 会校验插件的 `peerDependencies` 版本范围（可选的 peer 也校验）。本插件对
-> DSH 客户端包声明 `>=0.1.0-rc.3 <0.3.0`，覆盖 0.2.x。将来发布 0.3.x 时
-> 需要放宽该范围，否则插件页会标记为不兼容并拒绝加载。
+> DSH 客户端包声明 `>=0.1.0-rc.3 <=0.2.1-rc.2`，即上限到当前发行版。DSH 发布新版本后，
+> 需要放宽上限并重装，否则插件页会标记为不兼容并拒绝加载。
 
 ### 快速开始（桌面客户端，可直接复制）
 
@@ -162,7 +162,7 @@ D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
 
 | 现象 | 原因 / 处理 |
 | :--- | :--- |
-| 插件页显示**异常 / 不兼容** | DSH 版本超出声明的 peer 范围（`>=0.1.0-rc.3 <0.3.0`）。放宽范围后重装。 |
+| 插件页显示**异常 / 不兼容** | DSH 版本超出声明的 peer 范围（`>=0.1.0-rc.3 <=0.2.1-rc.2`）。放宽范围后重装。 |
 | 输入框没有胶囊 | profile 未重新加载：重启客户端，并确认 `dsh.profile.bundles` 含 `dsh-plugin-asr-zh-tiny`。 |
 | 红色提示「识别失败…请确认本地 ASR 服务已启动」 | `/health` 不通。启动服务（见 [`examples/asr-service`](./examples/asr-service/README.md)）。 |
 | 录音正常但请求超时 | 服务卡住，或设置卡片里的地址不对。 |
