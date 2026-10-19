@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { TARGET_SAMPLE_RATE, blobToPcm, encodeWav, mergePcm } from './audio.ts'
 import { readAsrBase } from './prefs.ts'
-import { joinDraft, normalizeAsrText } from './text.ts'
+import { joinDraft, normalizeAsrText, punctuateAsrText } from './text.ts'
 import css from './CollectorButton.module.css'
 
 /** Upper bound for one ASR/save round-trip before the UI reports a timeout. */
@@ -124,13 +124,15 @@ export function CollectorButton({ inputActions, useInput, t }: CollectorButtonPr
       })
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       const json = (await resp.json()) as { text?: unknown }
-      const text = normalizeAsrText(typeof json.text === 'string' ? json.text : '')
+      const hypothesis = normalizeAsrText(typeof json.text === 'string' ? json.text : '')
+      // 草稿拿到补全标点的版本；asr_hyp 仍保留模型原始输出（仅去空格），便于后续对比。
+      const text = punctuateAsrText(hypothesis)
       if (text !== '') {
         // 连续听写：文本追加到已有草稿之后，音频按段累计，保存时再合并成同一条样本。
         const prev = lastClipRef.current
         lastClipRef.current = {
           chunks: [...(prev?.chunks ?? []), samples],
-          asrParts: [...(prev?.asrParts ?? []), text],
+          asrParts: [...(prev?.asrParts ?? []), hypothesis],
         }
         setHasClip(true)
         inputActions.setDraft(joinDraft(draftRef.current, text))
@@ -260,10 +262,16 @@ export function CollectorButton({ inputActions, useInput, t }: CollectorButtonPr
           {notice.text}
         </div>
       )}
+      {busy && notice === null && (
+        <div className={css.processing} role="status" aria-live="polite">
+          <span className={css.dots} aria-hidden="true"><i /><i /><i /></span>
+          {transcribing ? t('recognizing') : t('saving')}
+        </div>
+      )}
       <div className={css.pill} role="group" aria-label={t('title')}>
         <button
           type="button"
-          className={recording ? css.btnActive : css.btn}
+          className={transcribing ? `${css.btn} ${css.btnTranscribing}` : recording ? css.btnActive : css.btn}
           aria-label={micTitle}
           aria-pressed={recording}
           title={micTitle}
@@ -274,7 +282,7 @@ export function CollectorButton({ inputActions, useInput, t }: CollectorButtonPr
           }}
         >
           {transcribing ? (
-            <span className={css.spinner} />
+            <span className={css.dots} aria-hidden="true"><i /><i /><i /></span>
           ) : recording ? (
             <span className={css.eq} aria-hidden="true">
               <i /><i /><i />
@@ -312,7 +320,7 @@ export function CollectorButton({ inputActions, useInput, t }: CollectorButtonPr
           onClick={() => { void saveSample() }}
         >
           {saving ? (
-            <span className={css.spinner} />
+            <span className={css.dots} aria-hidden="true"><i /><i /><i /></span>
           ) : (
             <svg className={css.icon} viewBox="0 0 24 24" aria-hidden="true">
               <path

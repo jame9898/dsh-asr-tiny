@@ -154,15 +154,63 @@
   animation-delay: -0.3s;
 }
 
-/* 识别中：跟随按钮文字色的环形进度 */
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
+/* 识别/保存中：三个脉冲点，替代转圈 spinner */
+.dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 16px;
+  height: 12px;
+}
+
+.dots i {
+  display: block;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  opacity: 0.7;
-  animation: spin 0.8s linear infinite;
+  background: currentColor;
+  opacity: 0.3;
+  animation: dot-pulse 1s ease-in-out infinite;
+}
+
+.dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* 识别中：不灰掉、不转圈，改用柔和的状态底色 + 呼吸光晕 */
+.btnTranscribing:disabled {
+  opacity: 1;
+  cursor: progress;
+  color: var(--dsw-alias-state-business-primary, #3b6fd4);
+  background: rgba(59, 111, 212, 0.14);
+  animation: processing-glow 1.6s ease-in-out infinite;
+}
+
+/* 识别/保存中的状态胶囊：直接告诉用户"正在识别" */
+.processing {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(22, 26, 36, 0.88);
+  color: #dbe4ff;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  z-index: 29;
+  animation: chip-in 0.16s ease-out;
 }
 
 @keyframes eq-bounce {
@@ -185,8 +233,35 @@
   }
 }
 
-@keyframes spin {
+@keyframes dot-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.75);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes processing-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 111, 212, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 111, 212, 0.12);
+  }
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
 }

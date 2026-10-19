@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { joinDraft, normalizeAsrText } from '../lib/client/text.js'
+import { joinDraft, normalizeAsrText, punctuateAsrText } from '../lib/client/text.js'
 
 test('normalizeAsrText collapses spaces between CJK characters', () => {
   assert.equal(normalizeAsrText('现 在 可 以 听 到 我 讲 话 吗'), '现在可以听到我讲话吗')
@@ -30,4 +30,22 @@ test('joinDraft joins CJK tightly and Latin with a space', () => {
 
 test('joinDraft trims trailing whitespace before appending', () => {
   assert.equal(joinDraft('你好  ', '世界'), '你好世界')
+})
+
+test('punctuateAsrText appends a sentence-final mark when missing', () => {
+  assert.equal(punctuateAsrText('今天天气不错'), '今天天气不错。')
+  assert.equal(punctuateAsrText('你现在能听到吗'), '你现在能听到吗？')
+  assert.equal(punctuateAsrText('好的。'), '好的。')
+})
+
+test('punctuateAsrText upgrades half-width marks between CJK characters', () => {
+  assert.equal(punctuateAsrText('你好,今天怎么样?'), '你好，今天怎么样？')
+})
+
+test('punctuateAsrText adds one comma before discourse markers in a long run', () => {
+  assert.equal(punctuateAsrText('今天开会但是我忘记了时间'), '今天开会，但是我忘记了时间。')
+})
+
+test('punctuateAsrText leaves short phrases free of invented commas', () => {
+  assert.equal(punctuateAsrText('好的'), '好的。')
 })

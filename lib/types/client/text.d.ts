@@ -11,6 +11,19 @@ export declare function normalizeAsrText(text: string): string;
 /** Whether a single character belongs to the CJK set that never takes a joining space. */
 export declare function isCjkChar(ch: string): boolean;
 /**
+ * Light punctuation cleanup for ASR output.
+ *
+ * Moonshine tiny output is often unpunctuated, or mixes half-width punctuation
+ * into Chinese. This does three conservative things:
+ *  - turn half-width `, . ? !` into full-width when they sit between CJK chars;
+ *  - if a longer transcript has no punctuation at all, add one comma before a
+ *    discourse marker (但是 / 然后 / 所以 …) so clauses do not run together;
+ *  - guarantee a sentence-final mark (？ for 吗/呢/么, otherwise 。).
+ *
+ * It never rewrites words and never invents punctuation in short phrases.
+ */
+export declare function punctuateAsrText(text: string): string;
+/**
  * Append one dictated segment to the existing draft instead of replacing it.
  * CJK text joins tightly (no inter-character spaces); anything involving Latin
  * letters or digits keeps a single separating space.

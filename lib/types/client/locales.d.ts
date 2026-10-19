@@ -5,6 +5,8 @@ export declare const zh: {
     clear: string;
     saved: string;
     collected: string;
+    recognizing: string;
+    saving: string;
     save: string;
     micDenied: string;
     recorderFailed: string;
@@ -25,6 +27,8 @@ export declare const en: {
     clear: string;
     saved: string;
     collected: string;
+    recognizing: string;
+    saving: string;
     save: string;
     micDenied: string;
     recorderFailed: string;
