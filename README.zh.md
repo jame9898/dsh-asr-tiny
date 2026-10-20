@@ -1,150 +1,108 @@
 # dsh-asr-tiny
 
+[![version](https://img.shields.io/badge/version-0.0.1-5b8def)](https://github.com/jame9898/dsh-asr-tiny)
 [![DSH](https://img.shields.io/badge/DSH-%3C%3D0.2.1--rc.2-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-一个较小的中文语音识别插件，装在 DeepSeek Harness 桌面客户端里。
-点 🎤 说话，文字直接进输入框；改完顺手保存，就能攒成自己的语音训练数据。
+[English](./README.md) | 中文
 
-## 30 秒上手
+在 DeepSeek Harness 里直接说话，文字自动出现在输入框。
 
-1. **起本地识别服务**：`<工作区>\scripts\restart_asr.ps1`（或双击 `start_asr.vbs`）。
-   看到 `{"status":"ok", ...}` 就算起来了。
-2. **装插件**：见下面「安装」，装完重启客户端。
-3. **说话**：输入框工具行出现 🎤 ✕ 💾，点 🎤 开始。
+说出来，文字就出来了；改一改，直接发送。
+想留作训练数据的话，点一下保存，这条录音和文字就会存下来，
+以后可以拿去微调属于你自己的语音模型。
 
-## 日常怎么用
+识别在你自己的电脑上跑，录音和文字都不会上传。
 
-| 按钮 | 作用 | 细节 |
-| :--- | :--- | :--- |
-| 🎤 | 点一下开始录音，再点一下停止并识别 | 文字**追加**到输入框，不覆盖你已经写的内容 |
-| ✕ | 清空输入框与未保存的录音 | 已保存的样本不受影响 |
-| 💾 | 把「累计录音 + 当前文本」存成一条样本 | **不清空输入框**，还能继续改、继续发 |
-
-实际用起来才会注意到的几个行为：
-
-- **连续听写**：说完一段停一下、再说，文字接着往后加；中文直接相连，英文/数字之间留一个空格。
-- **保存后接着写**：保存只消费「上次保存之后新增的部分」，下一句不会重复算进上一条样本。
-- **标点**：模型不保证给标点。插件会自动补句末的「。」/「？」，长句在「但是 / 然后 / 所以 / 因为…」前补逗号；不满意直接改。
-- **录音中**：按钮变红并出现波形；识别时按钮上方显示「识别中」和跳动点，通常一秒内出字。
-- **草稿不会丢**：识别只追加，保存不清空；只有点 ✕ 才会清掉文字。
-
-## 样本存在哪
-
-默认由本地 ASR 服务落盘（插件本身不写文件）：
-
-```
-data\audio\{id}.wav       16 kHz 单声道 WAV
-data\metadata.csv         id, wav_path, text, asr_hyp, created_at, duration_s
-```
-
-- `text` 是**你改过的文本**，训练时当标签用
-- `asr_hyp` 是模型原始输出，用来对比
-- 训练只需要 `file, text` 两列
-
-## 常见问题
-
-| 现象 | 原因 / 处理 |
-| :--- | :--- |
-| 点 🎤 没反应 | 麦克风权限被拒（提示「无法访问麦克风」），到系统设置里允许 |
-| 识别失败 / 超时 | 本地服务没起：`curl http://127.0.0.1:8000/health`，不通就重启服务 |
-| 「识别中」一直不消失 | 服务没响应，或设置里的地址写错了 |
-| 识别结果没有标点 | 模型限制；插件只做句末和转折处的补全，建议保存前顺手改 |
-| 改了 ASR 地址不生效 | 保存后**下一次录音**才用新地址 |
-| 升级后还是旧版 | profile 里留着旧副本：跑 `scripts\upgrade.ps1`，或先删 `node_modules\dsh-asr-tiny` |
+![空闲、录音中、识别中、已保存四种状态](docs/assets/capsule.gif)
 
 ## 安装
 
-### 桌面客户端（DSH 0.2.x）
+把仓库地址交给 AI，让它先克隆、读一遍、再动手装。
 
-1. 在 profile 的 `package.json` 里登记（保留已有条目）：
+#### 1. 克隆仓库
+
+```sh
+git clone https://github.com/jame9898/dsh-asr-tiny.git
+```
+
+#### 2. 文件
+
+| 文件 / 目录 | 作用 |
+| :--- | :--- |
+| `package.json` | 插件声明：名字、版本、客户端入口（`dsh.client`） |
+| `cordis.patch.yml` | 把插件挂进 DSH 的插件树 |
+| `src/index.ts` | 后台半：注册插件，可选代管识别服务进程 |
+| `src/client/` | 界面半：输入框旁的按钮、设置卡片、录音与文字处理 |
+| `lib/` | 构建好的插件包（仓库里已带，不用再构建） |
+| `examples/asr-service/` | 参考识别服务（FastAPI + Moonshine），可选 |
+| `scripts/upgrade.ps1` | 升级已经装过的旧版本 |
+| `tests/` | 单元测试 |
+
+#### 3. 准备识别服务
+
+没有现成的，就用 `examples/asr-service`（用 CPU 还是 GPU 都行，那里的说明写得很细）。
+
+#### 4. 登记插件并安装
+
+在 profile 的 `package.json` 里加上（保留原来就有的内容）：
 
 ```json
 {
-  "dependencies": { "dsh-asr-tiny": "file:E:/path/to/dsh-asr-tiny" },
+  "dependencies": { "dsh-asr-tiny": "file:<克隆下来的目录>" },
   "dsh": { "profile": { "bundles": ["…已有 bundles…", "dsh-asr-tiny"] } }
 }
 ```
 
-2. 用客户端自带运行时安装：
+用 DSH 客户端安装目录里自带的 Node 和 pnpm 来装（不要用系统里的 pnpm）：
 
 ```powershell
 D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
   D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
 ```
 
-3. 重启客户端。
+> 装过旧版本的话，先删掉 `node_modules\dsh-asr-tiny` 再装，否则加载的还是旧版。
 
-### 交给 AI 代理
+#### 5. 重启客户端
 
-把这个仓库交给 AI，让它按顺序做：
+输入框旁边出现 🎤 ✕ 💾 就装好了。
 
-1. 确认 `curl http://127.0.0.1:8000/health` 通；不通就先起服务
-2. 在 `%USERPROFILE%\.dsh\profiles\desktop\package.json` 加依赖与 bundle（见上）
-3. **之前装过就先删** `node_modules\dsh-asr-tiny`，再跑上面的 pnpm 命令
-4. 重启客户端
-5. 验证：插件页无异常、输入框有胶囊、录一句能出字
+第一次识别会自动下载中文模型（大约 100 MB）；国内网络慢，可以先设镜像：`set HF_ENDPOINT=https://hf-mirror.com`。
 
-### 升级
+## 数据存放
 
-profile 会把插件复制到自己的 `node_modules`，pnpm 又缓存 `file:` 依赖，所以**只跑 install 不会升级**：
+识别服务会把它们存在自己的 `data` 目录里：
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\upgrade.ps1
-# 然后重启客户端，插件页会显示新版本号
-```
+- `audio/*.wav` —— 录音文件
+- `metadata.csv` —— 文字和对应关系
 
-## 配置
+插件本身不存文件，卸载插件也不会丢数据。
 
-- **ASR 地址**：插件页 → 设置卡片，默认 `http://127.0.0.1:8000`，存在 `localStorage`
-  （升级不丢；从旧名字 `dsh-plugin-asr-zh-tiny` 迁移时会自动读一次旧 key）
-- **随客户端自动起服务**（可选）：profile 的 `cordis.patch.yml`
+## ASR识别模型
 
-```yaml
-- id: dsh-asr-tiny
-  name: dsh-asr-tiny
-  config:
-    autoStart: true
-    pythonPath: 'C:\path\to\moonshine\venv\Scripts\pythonw.exe'
-    serverPath: 'C:\path\to\moonshine\asr\server.py'
-    logDir: 'C:\path\to\moonshine\asr'
-```
+插件本身不带模型，识别服务启动时会挑下面某一个来用：
 
-## 需要一个什么样的 ASR 服务
-
-插件只负责录音和界面，识别交给本机服务：
-
-| 接口 | 请求 | 响应 |
+| 模型 | 语言 | 说明 |
 | :--- | :--- | :--- |
-| `POST /transcribe` | multipart `file`（16 kHz 单声道 WAV） | `{"text": "...", "duration_s": 9.8}` |
-| `POST /samples` | form `text`、`asr_hyp`、`duration_s` + `file` | `{"ok": true, "id": "..."}` |
-| `GET /samples` | — | `{"count": N, "samples": [...]}` |
-| `GET /health` | — | `{"status": "ok"}` |
+| `moonshine-ai/moonshine-tiny-zh` | 中文 | 已实测 |
+| `moonshine-ai/moonshine-tiny` | 英文 | 架构相同，**未实测** |
+| `moonshine-ai/moonshine-base` | 英文 | **未实测** |
 
-任何实现这四个接口的服务都能用。`examples/asr-service` 里有一个可直接跑的参考实现：
+**本仓库不包含任何模型文件。** 需要哪个，去 Hugging Face 的对应仓库下载：
 
-```sh
-cd examples/asr-service
-pip install -r requirements.txt
-python server.py
-```
+- 中文：https://huggingface.co/moonshine-ai/moonshine-tiny-zh
+- 英文：https://huggingface.co/moonshine-ai/moonshine-tiny
+- 英文（更大）：https://huggingface.co/moonshine-ai/moonshine-base
 
-## 开发
+国内网络可以用镜像，把域名换成 `hf-mirror.com` 即可，例如
+https://hf-mirror.com/moonshine-ai/moonshine-tiny-zh 。
 
-```sh
-pnpm install
-pnpm run build        # tsc（host 半 + 类型）+ tsdown（客户端 bundle）
-pnpm run typecheck
-pnpm test             # 15 个单测：标点/拼接、PCM 合并、WAV 编码
-```
+下载后不需要手动配置：识别服务第一次启动会用 `MOONSHINE_MODEL` 指定的模型
+（填 Hugging Face 仓库名或本地目录都行），默认就是中文那个。
 
-- `src/index.ts` —— host 半：注册插件，可选托管本地 ASR 进程
-- `src/client/` —— 客户端半：输入框胶囊 + 设置卡片
-- `src/client/text.ts` —— 空格归一、标点补全、草稿拼接（`tests/` 覆盖）
-- `src/client/audio.ts` —— 解码、重采样到 16 kHz、WAV 编码
+许可：中文模型遵循 Moonshine AI Community License；两个英文模型是 MIT。
 
-## License
+## 许可
 
-插件代码 MIT（见 [`LICENSE`](./LICENSE)）。本仓库不含模型权重与训练数据；参考服务在运行时加载
-[`moonshine-ai/moonshine-tiny-zh`](https://huggingface.co/moonshine-ai/moonshine-tiny-zh)，
-该模型遵循 Moonshine AI Community License。
+插件代码是 MIT，见 [`LICENSE`](./LICENSE)。
+仓库里不含模型权重和训练数据。

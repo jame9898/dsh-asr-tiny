@@ -3,4 +3,6 @@ uvicorn>=0.27
 soundfile>=0.12
 numpy
 transformers>=4.56
-torch>=2.1
+
+# PyTorch is machine-specific (CPU / CUDA / ROCm): install the build that matches
+# the machine first, then this file. See "Install" in README.md.
