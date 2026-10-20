@@ -20,12 +20,12 @@ export function SettingsCard({ t }: SettingsCardProps) {
 
   return (
     <div className={css.card}>
-      <label className={css.label} htmlFor="dsh-plugin-asr-zh-tiny-asr-base">
+      <label className={css.label} htmlFor="dsh-asr-tiny-asr-base">
         {t('settingsAsrBase')}
       </label>
       <div className={css.row}>
         <input
-          id="dsh-plugin-asr-zh-tiny-asr-base"
+          id="dsh-asr-tiny-asr-base"
           className={css.input}
           value={value}
           placeholder={DEFAULT_ASR_BASE}

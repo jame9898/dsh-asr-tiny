@@ -1,7 +1,7 @@
 /**
- * tsdown build for dsh-plugin-asr-zh-tiny: the single browser client bundle
+ * tsdown build for dsh-asr-tiny: the single browser client bundle
  * (lib/client.js, CJS closure factory) registered under the package-name id
- * 'dsh-plugin-asr-zh-tiny'. The host half is built by tsc (lib/index.js keeps
+ * 'dsh-asr-tiny'. The host half is built by tsc (lib/index.js keeps
  * its @deepseek-ai/* imports external; they resolve from the profile install).
  *
  * Mirrors the official DSH client-bundle preset (packages/client/tsdown.client.ts):
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 import type { UserConfig } from 'tsdown'
 import { transform } from 'lightningcss'
 
-const PLUGIN_ID = 'dsh-plugin-asr-zh-tiny'
+const PLUGIN_ID = 'dsh-asr-tiny'
 
 const CLIENT_EXTERNALS = [
   'react',

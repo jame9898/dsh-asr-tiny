@@ -1,5 +1,5 @@
 /**
- * dsh-plugin-asr-zh-tiny — host half.
+ * dsh-asr-tiny — host half.
  *
  * Personal-accent voice data collector for the Moonshine fine-tuning loop:
  *   record -> local ASR -> correct -> save (WAV + text)
@@ -11,8 +11,8 @@
  * assume anyone's local paths.
  *
  * Config (profile `cordis.patch.yml`):
- *   - id: dsh-plugin-asr-zh-tiny
- *     name: dsh-plugin-asr-zh-tiny
+ *   - id: dsh-asr-tiny
+ *     name: dsh-asr-tiny
  *     config:
  *       asrBase: 'http://127.0.0.1:8000'   # optional, this is the default
  *       autoStart: true                    # default false
@@ -28,7 +28,7 @@ import { join } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import { DEFAULT_ASR_BASE } from './config.ts'
 
-export const name = 'dsh-plugin-asr-zh-tiny'
+export const name = 'dsh-asr-tiny'
 
 /** Plugin config surface (unvalidated pass-through; see the header example). */
 export interface CollectorConfig {
@@ -84,7 +84,7 @@ function readConfig(raw: unknown): ResolvedConfig {
 }
 
 function info(ctx: Context, message: string): void {
-  const line = `[dsh-plugin-asr-zh-tiny] ${message}`
+  const line = `[dsh-asr-tiny] ${message}`
   try {
     const method = ctx.logger?.info?.bind(ctx.logger)
     if (typeof method === 'function') method(line)
@@ -252,7 +252,7 @@ export function apply(ctx: Context, raw?: unknown): void {
     ctx.effect(() => () => {
       disposed = true
       return stopOwnedAsr()
-    }, 'dsh-plugin-asr-zh-tiny: ASR service lifecycle')
+    }, 'dsh-asr-tiny: ASR service lifecycle')
   } catch {
     /* host without effect support: leave the service independent */
   }

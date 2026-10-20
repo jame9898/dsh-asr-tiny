@@ -9,4 +9,6 @@
 /** Default local ASR service base URL. */
 export declare const DEFAULT_ASR_BASE = "http://127.0.0.1:8000";
 /** localStorage key holding the browser-side ASR base override. */
-export declare const ASR_BASE_STORAGE_KEY = "dsh-plugin-asr-zh-tiny.asrBase";
+export declare const ASR_BASE_STORAGE_KEY = "dsh-asr-tiny.asrBase";
+/** Key used before the plugin was renamed; read once and migrated. */
+export declare const LEGACY_ASR_BASE_STORAGE_KEY = "dsh-plugin-asr-zh-tiny.asrBase";

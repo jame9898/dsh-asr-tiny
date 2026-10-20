@@ -1,5 +1,5 @@
 /**
- * dsh-plugin-asr-zh-tiny — client half.
+ * dsh-asr-tiny — client half.
  *
  * A full "record -> recognize -> correct -> save" panel injected into the
  * conversation composer tool row, plus a settings card (plugin page) that
@@ -12,17 +12,17 @@ import { CollectorButton } from './CollectorButton.tsx'
 import { SettingsCard } from './SettingsCard.tsx'
 import { en, zh } from './locales.ts'
 
-export const name = 'dsh-plugin-asr-zh-tiny-client'
+export const name = 'dsh-asr-tiny-client'
 
 export const inject = ['slots', 'locale']
 
 export const LOCALE_NS = 'voice.collector'
 
 /** The bundle this package's client half belongs to (plugin-manager settings key). */
-export const BUNDLE_NAME = 'dsh-plugin-asr-zh-tiny'
+export const BUNDLE_NAME = 'dsh-asr-tiny'
 
 export function apply(ctx: Context): void {
-  ctx.effect(() => ctx.locale.register(LOCALE_NS, { zh, en }), 'dsh-plugin-asr-zh-tiny: dictionaries')
+  ctx.effect(() => ctx.locale.register(LOCALE_NS, { zh, en }), 'dsh-asr-tiny: dictionaries')
 
   ctx.effect(() => {
     return ctx.slots.inject('conversation.input.left', () => ctx.slots.register({
@@ -32,7 +32,7 @@ export function apply(ctx: Context): void {
       locale: LOCALE_NS,
       inject: () => ({}),
     }, CollectorButton))
-  }, 'dsh-plugin-asr-zh-tiny: collector slot')
+  }, 'dsh-asr-tiny: collector slot')
 
   ctx.effect(() => {
     return ctx.slots.inject('plugins.bundle.config', () => {
@@ -46,5 +46,5 @@ export function apply(ctx: Context): void {
       }
       return ctx.slots.register(options as never, SettingsCard)
     })
-  }, 'dsh-plugin-asr-zh-tiny: settings card')
+  }, 'dsh-asr-tiny: settings card')
 }

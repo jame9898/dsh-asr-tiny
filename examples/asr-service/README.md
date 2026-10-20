@@ -1,7 +1,7 @@
 # Reference ASR service
 
 A minimal FastAPI + Moonshine service implementing the four endpoints
-[dsh-plugin-asr-zh-tiny](../../README.md) talks to. It is a starting point, not
+[dsh-asr-tiny](../../README.md) talks to. It is a starting point, not
 production software: no auth, no queueing, one request at a time, CPU or a single GPU.
 
 ## Install

@@ -1,40 +1,118 @@
-# dsh-plugin-asr-zh-tiny
+# dsh-asr-tiny
 
 [![DSH](https://img.shields.io/badge/DSH-%3C%3D0.2.1--rc.2-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-[English](./README.md) | 中文
+一个较小的中文语音识别插件，装在 DeepSeek Harness 桌面客户端里。
+点 🎤 说话，文字直接进输入框；改完顺手保存，就能攒成自己的语音训练数据。
 
-一个较小的中文语音识别插件，面向 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 桌面客户端。
-它有两个用途：把你说的话转成文字；以及把录音和校正后的文本保存为训练样本，用来微调属于你自己的语音模型。
+## 30 秒上手
 
-- 支持 **DSH 桌面客户端（0.2.x）**。
-- 音频与文本不离开本机：插件只访问本地 ASR 服务，不经过任何云服务。
-- 插件包含两半：客户端 bundle（输入框工具条 + 设置卡片）与可选的 host 半
-  （可把本地 ASR 服务绑定到 DSH 生命周期）。
+1. **起本地识别服务**：`<工作区>\scripts\restart_asr.ps1`（或双击 `start_asr.vbs`）。
+   看到 `{"status":"ok", ...}` 就算起来了。
+2. **装插件**：见下面「安装」，装完重启客户端。
+3. **说话**：输入框工具行出现 🎤 ✕ 💾，点 🎤 开始。
 
-> **本插件不自带 ASR 引擎**，它只驱动本地 ASR 服务。如果你还没有服务，先用
-> [`examples/asr-service`](./examples/asr-service/README.md) 里可运行的参考实现
-> （`pip install -r requirements.txt && python server.py`）。
+## 日常怎么用
 
-## 特性
+| 按钮 | 作用 | 细节 |
+| :--- | :--- | :--- |
+| 🎤 | 点一下开始录音，再点一下停止并识别 | 文字**追加**到输入框，不覆盖你已经写的内容 |
+| ✕ | 清空输入框与未保存的录音 | 已保存的样本不受影响 |
+| 💾 | 把「累计录音 + 当前文本」存成一条样本 | **不清空输入框**，还能继续改、继续发 |
 
-- **输入框胶囊**：三个紧凑按钮（🎤 录音、✕ 清空、💾 保存），尺寸与原生 28px 工具按钮一致。
-- **连续听写**：每次识别结果**追加**到输入框已有文字之后（中文紧接，英文/数字保留一个空格）。
-- **多段合并**：保存前录制的多段音频会合并成同一条样本，段间插入 0.2 秒静音，
-  保证文本与音频描述的是同一段话。
-- **可编辑文稿**：保存的是你校正后的文本，同时记录模型原始识别结果（`asr_hyp`）。
-- **录音反馈**：录音时话筒变红并带呼吸涟漪与三根跳动的音量条；识别/保存显示行内进度；
-  失败以红色提示呈现（麦克风被拒、录音无法启动、服务离线、无语音、解码失败、超时）。
-- **中英双语 UI**，并提供 ASR 服务地址的设置卡片。
+实际用起来才会注意到的几个行为：
 
-## 前置条件
+- **连续听写**：说完一段停一下、再说，文字接着往后加；中文直接相连，英文/数字之间留一个空格。
+- **保存后接着写**：保存只消费「上次保存之后新增的部分」，下一句不会重复算进上一条样本。
+- **标点**：模型不保证给标点。插件会自动补句末的「。」/「？」，长句在「但是 / 然后 / 所以 / 因为…」前补逗号；不满意直接改。
+- **录音中**：按钮变红并出现波形；识别时按钮上方显示「识别中」和跳动点，通常一秒内出字。
+- **草稿不会丢**：识别只追加，保存不清空；只有点 ✕ 才会清掉文字。
 
-- DSH `<=0.2.1-rc.2` —— 桌面客户端 0.2.x。
-- Node.js `^22.19.0 || >=24.0.0`。
-- 一个实现下列 HTTP 接口的本地 ASR 服务，默认地址 `http://127.0.0.1:8000`。
+## 样本存在哪
 
-### ASR 服务接口约定
+默认由本地 ASR 服务落盘（插件本身不写文件）：
+
+```
+data\audio\{id}.wav       16 kHz 单声道 WAV
+data\metadata.csv         id, wav_path, text, asr_hyp, created_at, duration_s
+```
+
+- `text` 是**你改过的文本**，训练时当标签用
+- `asr_hyp` 是模型原始输出，用来对比
+- 训练只需要 `file, text` 两列
+
+## 常见问题
+
+| 现象 | 原因 / 处理 |
+| :--- | :--- |
+| 点 🎤 没反应 | 麦克风权限被拒（提示「无法访问麦克风」），到系统设置里允许 |
+| 识别失败 / 超时 | 本地服务没起：`curl http://127.0.0.1:8000/health`，不通就重启服务 |
+| 「识别中」一直不消失 | 服务没响应，或设置里的地址写错了 |
+| 识别结果没有标点 | 模型限制；插件只做句末和转折处的补全，建议保存前顺手改 |
+| 改了 ASR 地址不生效 | 保存后**下一次录音**才用新地址 |
+| 升级后还是旧版 | profile 里留着旧副本：跑 `scripts\upgrade.ps1`，或先删 `node_modules\dsh-asr-tiny` |
+
+## 安装
+
+### 桌面客户端（DSH 0.2.x）
+
+1. 在 profile 的 `package.json` 里登记（保留已有条目）：
+
+```json
+{
+  "dependencies": { "dsh-asr-tiny": "file:E:/path/to/dsh-asr-tiny" },
+  "dsh": { "profile": { "bundles": ["…已有 bundles…", "dsh-asr-tiny"] } }
+}
+```
+
+2. 用客户端自带运行时安装：
+
+```powershell
+D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
+  D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
+```
+
+3. 重启客户端。
+
+### 交给 AI 代理
+
+把这个仓库交给 AI，让它按顺序做：
+
+1. 确认 `curl http://127.0.0.1:8000/health` 通；不通就先起服务
+2. 在 `%USERPROFILE%\.dsh\profiles\desktop\package.json` 加依赖与 bundle（见上）
+3. **之前装过就先删** `node_modules\dsh-asr-tiny`，再跑上面的 pnpm 命令
+4. 重启客户端
+5. 验证：插件页无异常、输入框有胶囊、录一句能出字
+
+### 升级
+
+profile 会把插件复制到自己的 `node_modules`，pnpm 又缓存 `file:` 依赖，所以**只跑 install 不会升级**：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\upgrade.ps1
+# 然后重启客户端，插件页会显示新版本号
+```
+
+## 配置
+
+- **ASR 地址**：插件页 → 设置卡片，默认 `http://127.0.0.1:8000`，存在 `localStorage`
+  （升级不丢；从旧名字 `dsh-plugin-asr-zh-tiny` 迁移时会自动读一次旧 key）
+- **随客户端自动起服务**（可选）：profile 的 `cordis.patch.yml`
+
+```yaml
+- id: dsh-asr-tiny
+  name: dsh-asr-tiny
+  config:
+    autoStart: true
+    pythonPath: 'C:\path\to\moonshine\venv\Scripts\pythonw.exe'
+    serverPath: 'C:\path\to\moonshine\asr\server.py'
+    logDir: 'C:\path\to\moonshine\asr'
+```
+
+## 需要一个什么样的 ASR 服务
+
+插件只负责录音和界面，识别交给本机服务：
 
 | 接口 | 请求 | 响应 |
 | :--- | :--- | :--- |
@@ -43,215 +121,30 @@
 | `GET /samples` | — | `{"count": N, "samples": [...]}` |
 | `GET /health` | — | `{"status": "ok"}` |
 
-任何实现上述接口的服务都可以。开发本插件时使用的参考实现是一个 FastAPI + Moonshine
-（`moonshine-tiny-zh`）服务，样本保存在本地 `data/` 目录下。
-
-### 模型从哪里来
-
-插件**不包含模型**，模型由 ASR 服务负责。参考的 Moonshine 服务使用：
-
-| 模型 | 语言 | 参数量 | 说明 |
-| :--- | :--- | ---: | :--- |
-| [`moonshine-ai/moonshine-tiny-zh`](https://huggingface.co/moonshine-ai/moonshine-tiny-zh) | 中文 | 27 M | `model.safetensors` 约 103 MB；许可证见模型卡（`other`） |
-| [`moonshine-ai/moonshine-tiny`](https://huggingface.co/moonshine-ai/moonshine-tiny) | 英文 | 27 M | MIT |
-| [`moonshine-ai/moonshine-base`](https://huggingface.co/moonshine-ai/moonshine-base) | 英文 | 61 M | MIT |
-
-下载一次即可（两种 CLI 写法都可用）：
+任何实现这四个接口的服务都能用。`examples/asr-service` 里有一个可直接跑的参考实现：
 
 ```sh
-huggingface-cli download moonshine-ai/moonshine-tiny-zh --local-dir models/moonshine-tiny-zh
-# 新版 CLI：hf download moonshine-ai/moonshine-tiny-zh --local-dir models/moonshine-tiny-zh
-# 国内镜像：HF_ENDPOINT=https://hf-mirror.com huggingface-cli download ...
+cd examples/asr-service
+pip install -r requirements.txt
+python server.py
 ```
-
-也可以直接用 Python 从 hub 加载：
-
-```python
-from transformers import AutoProcessor, MoonshineForConditionalGeneration
-processor = AutoProcessor.from_pretrained("moonshine-ai/moonshine-tiny-zh")
-model = MoonshineForConditionalGeneration.from_pretrained("moonshine-ai/moonshine-tiny-zh")
-```
-
-可选：导出 ONNX（`encoder_model.onnx` + `decoder_model.onnx`）以加快启动；参考服务检测到
-ONNX 时优先使用，否则回退到 PyTorch 权重。
-
-### 保存的语音存在哪里
-
-插件**不写任何文件**：每条样本都通过 `POST /samples` 交给 ASR 服务，存储完全由服务决定。
-参考实现会在自己的工作目录下写入：
-
-```
-data/
-  audio/{id}.wav       # 16 kHz 单声道 WAV，一条样本一个文件
-  metadata.csv         # 列：id, wav_path, text, asr_hyp, created_at, duration_s
-```
-
-插件只在 `GET /samples` 读取数量用于按钮徽标；音频最终落在哪里取决于你的服务实现。
-
-## 安装
-
-插件是 out-of-tree 客户端 bundle（`dsh.client` + `dsh.bundle.patch`）。
-`lib/` 已随仓库提交，因此从 git 安装无需构建。
-
-### 桌面客户端（DSH 0.2.x）
-
-桌面客户端使用独立 profile 目录（Windows 下为 `~/.dsh/profiles/desktop`）：
-
-1. 在 profile 的 `package.json` 中增加依赖：
-   `"dsh-plugin-asr-zh-tiny": "file:<你的本地路径>"`（或 `"github:<owner>/dsh-plugin-asr-zh-tiny"`）。
-2. 在 `dsh.profile.bundles` 中增加 `"dsh-plugin-asr-zh-tiny"`。
-3. 用客户端自带运行时安装（跳过生命周期脚本，`lib/` 已经是构建好的）：
-
-```powershell
-D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
-  D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
-```
-
-重启客户端即可加载 profile；之后每次启动都会自动加载。客户端 bundle 有轮询热更新，
-通常重新构建 + 重装后无需重启。
-
-> DSH 0.2 会校验插件的 `peerDependencies` 版本范围（可选的 peer 也校验）。本插件对
-> DSH 客户端包声明 `<=0.2.1-rc.2`，即上限到当前发行版。DSH 发布新版本后，
-> 需要放宽上限并重装，否则插件页会标记为不兼容并拒绝加载。
-
-### 快速开始（桌面客户端，可直接复制）
-
-目标文件：Windows 下 `%USERPROFILE%\.dsh\profiles\desktop\package.json`
-（其他系统为 `~/.dsh/profiles/desktop/package.json`）。保留已有的条目：
-
-```json
-{
-  "dependencies": {
-    "dsh-plugin-asr-zh-tiny": "file:E:/path/to/dsh-plugin-asr-zh-tiny"
-  },
-  "dsh": {
-    "profile": {
-      "bundles": ["…已有 bundles…", "dsh-plugin-asr-zh-tiny"]
-    }
-  }
-}
-```
-
-然后用客户端自带运行时安装，并重启客户端：
-
-```powershell
-D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
-  D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
-```
-
-### 升级已安装的版本
-
-桌面 profile 会把插件复制到自己的 `node_modules` 下，而 pnpm 对 `file:` 依赖有缓存，
-**只重跑 `pnpm install` 不会生效**——必须先把旧副本删掉，否则加载的仍是旧版本。
-
-```powershell
-# 1. 更新源码（git pull，或直接替换文件夹）
-# 2. 只重装这一个包
-Remove-Item "<profile>\node_modules\dsh-plugin-asr-zh-tiny" -Recurse -Force
-D:\dsh\resources\runtime\primary-runtime\dependencies\node\bin\node.exe `
-  D:\dsh\resources\runtime\primary-runtime\dependencies\pnpm\bin\pnpm.mjs install --ignore-scripts
-```
-
-或者直接跑仓库自带的脚本（等价于上面两步，并打印安装后的版本）：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\upgrade.ps1
-```
-
-然后重启客户端。插件页会显示已安装版本，当前发布版是 `0.2.1`。
-升级不会动你的数据：ASR 地址存在 `localStorage`，录音样本在服务的 `data/` 目录里。
-
-### 交给 AI 工具安装
-
-仓库是自包含的（`lib/` 已提交，安装**不需要构建**）。把下面这份清单交给 AI 代理即可：
-
-1. **定位 profile**：`%USERPROFILE%\.dsh\profiles\desktop`（Windows）或
-   `~/.dsh/profiles/desktop`。
-2. **注册插件**：按上面的 JSON 增加 dependency 与 bundle。
-3. **安装**：执行上面的客户端自带 pnpm 命令（带 `--ignore-scripts`）。
-   **如果之前装过**：先删掉 `node_modules/dsh-plugin-asr-zh-tiny`，否则 pnpm 的 `file:` 缓存会让旧 bundle 继续生效；
-   `scripts/upgrade.ps1` 已把这一步封装好。
-4. **重启**客户端，让 profile 重新加载。
-5. **按下文清单验证**。
-6. **可选**：在 `cordis.patch.yml` 里开启 host 端自动拉起服务（见「配置」）。
-
-## 安装验证
-
-- 插件页（插件 → `dsh-plugin-asr-zh-tiny`）列出该 bundle，且**没有异常标记**。
-- 输入框工具行出现语音采集胶囊（🎤 ✕ 💾）。
-- 插件页出现 ASR 地址设置卡片。
-- `curl http://127.0.0.1:8000/health` 返回 `{"status":"ok", ...}`；录音后能产出文字。
-
-## 常见问题
-
-| 现象 | 原因 / 处理 |
-| :--- | :--- |
-| 插件页显示**异常 / 不兼容** | DSH 版本超出声明的 peer 范围（`<=0.2.1-rc.2`）。放宽范围后重装。 |
-| 输入框没有胶囊 | profile 未重新加载：重启客户端，并确认 `dsh.profile.bundles` 含 `dsh-plugin-asr-zh-tiny`。 |
-| 红色提示「识别失败…请确认本地 ASR 服务已启动」 | `/health` 不通。启动服务（见 [`examples/asr-service`](./examples/asr-service/README.md)）。 |
-| 录音正常但请求超时 | 服务卡住，或设置卡片里的地址不对。 |
-| 桌面上残留控制台窗口 | 服务用 `python.exe` 启动；改用 `pythonw.exe`（见 host 配置）。 |
-| `pnpm` 拒绝执行 build scripts | 插件安装不需要构建（`lib/` 已提交）；用 `--ignore-scripts` 安装。 |
-
-## 配置
-
-### 客户端 —— ASR 服务地址
-
-打开插件页（插件 → `dsh-plugin-asr-zh-tiny`），在设置卡片里编辑 **本地 ASR 服务地址**。
-该值保存在 `localStorage` 的 `dsh-plugin-asr-zh-tiny.asrBase`；留空恢复默认
-`http://127.0.0.1:8000`。
-
-### Host 端 —— 可选的服务生命周期（默认关闭）
-
-默认情况下 host 半只负责注册插件。它也可以随 DSH 启动本地 ASR 服务，并在退出时回收
-**由它自己启动的**进程。在 profile 的 `cordis.patch.yml` 中加入：
-
-```yaml
-- id: dsh-plugin-asr-zh-tiny
-  name: dsh-plugin-asr-zh-tiny
-  config:
-    asrBase: 'http://127.0.0.1:8000'       # 可选，默认就是它
-    autoStart: true                        # 默认 false
-    pythonPath: 'C:\path\to\moonshine\venv\Scripts\pythonw.exe'
-    serverPath: 'C:\path\to\moonshine\asr\server.py'
-    logDir: 'C:\path\to\moonshine\asr'     # 可选，日志会轮转
-```
-
-- 仅在端口空闲时接管启动；已在运行的服务不会被重复拉起，也不会被误杀。
-- 退出时只回收本插件启动的进程（先优雅 `taskkill /T`，短暂等待后再强制）。
-  该生命周期仅 Windows 生效；其他平台退化为普通信号。
-- 推荐使用 `pythonw.exe`：以 detached 方式启动 `python.exe` 时，venv 的 redirector 会给
-  真实服务分配一个**可见**的新控制台窗口。
-
-## 使用
-
-1. 输入框工具行出现语音采集胶囊。
-2. 点 🎤 开始录音，再点一次停止 —— 识别结果**追加**到输入框。
-3. 可以继续说下一段来延长草稿，也可以先改错字。
-4. 点 💾 保存：累计音频 + 当前输入框文本成为一条样本。
-   - **输入框不会被清空** —— 你还可以继续编辑或直接发送。
-   - 保存之后再听写，只有新增的部分会计入下一条样本。
-5. 点 ✕ 清空草稿并丢弃尚未保存的音频。
 
 ## 开发
 
 ```sh
 pnpm install
-pnpm run build        # 清理 lib/ → tsc（host 半 + 类型声明）→ tsdown（客户端 bundle）
+pnpm run build        # tsc（host 半 + 类型）+ tsdown（客户端 bundle）
 pnpm run typecheck
-pnpm test             # 构建 + node --test（纯函数单测：文本拼接 / PCM 合并 / WAV 编码）
+pnpm test             # 15 个单测：标点/拼接、PCM 合并、WAV 编码
 ```
 
-- `src/index.ts` —— host 半：注册插件树 + 可选的 ASR 服务生命周期。
-- `src/client/` —— 客户端半：slot 注册（输入框胶囊 + 设置卡片）。
-- `src/client/text.ts`、`src/client/audio.ts` —— 纯函数，`tests/` 覆盖。
-- `src/config.ts` —— 共享默认值（`DEFAULT_ASR_BASE`、存储 key）。
-- CSS Modules 通过 `tsdown.config.ts` 编译进客户端 bundle。
+- `src/index.ts` —— host 半：注册插件，可选托管本地 ASR 进程
+- `src/client/` —— 客户端半：输入框胶囊 + 设置卡片
+- `src/client/text.ts` —— 空格归一、标点补全、草稿拼接（`tests/` 覆盖）
+- `src/client/audio.ts` —— 解码、重采样到 16 kHz、WAV 编码
 
-## 许可证
+## License
 
-插件代码为 MIT（见 [`LICENSE`](./LICENSE)）。
-
-本仓库**不包含模型权重，也不包含训练数据**。参考服务在运行时加载
+插件代码 MIT（见 [`LICENSE`](./LICENSE)）。本仓库不含模型权重与训练数据；参考服务在运行时加载
 [`moonshine-ai/moonshine-tiny-zh`](https://huggingface.co/moonshine-ai/moonshine-tiny-zh)，
-该模型遵循 **Moonshine AI Community License**；使用或再分发前请先阅读该协议。
+该模型遵循 Moonshine AI Community License。

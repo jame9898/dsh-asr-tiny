@@ -1,5 +1,5 @@
 /**
- * dsh-plugin-asr-zh-tiny — host half.
+ * dsh-asr-tiny — host half.
  *
  * Personal-accent voice data collector for the Moonshine fine-tuning loop:
  *   record -> local ASR -> correct -> save (WAV + text)
@@ -11,8 +11,8 @@
  * assume anyone's local paths.
  *
  * Config (profile `cordis.patch.yml`):
- *   - id: dsh-plugin-asr-zh-tiny
- *     name: dsh-plugin-asr-zh-tiny
+ *   - id: dsh-asr-tiny
+ *     name: dsh-asr-tiny
  *     config:
  *       asrBase: 'http://127.0.0.1:8000'   # optional, this is the default
  *       autoStart: true                    # default false
@@ -21,7 +21,7 @@
  *       logDir: 'D:\...\asr_service'       # optional rotating log directory
  */
 import type { Context } from '@deepseek-ai/cordis';
-export declare const name = "dsh-plugin-asr-zh-tiny";
+export declare const name = "dsh-asr-tiny";
 /** Plugin config surface (unvalidated pass-through; see the header example). */
 export interface CollectorConfig {
     /** Base URL of the local ASR service. */

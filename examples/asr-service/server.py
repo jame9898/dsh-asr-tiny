@@ -1,4 +1,4 @@
-"""Reference ASR service for dsh-plugin-asr-zh-tiny.
+"""Reference ASR service for dsh-asr-tiny.
 
 Implements the four HTTP endpoints the plugin talks to:
 
@@ -65,7 +65,7 @@ def load_model():
     return _processor, _model
 
 
-app = FastAPI(title="dsh-plugin-asr-zh-tiny reference ASR")
+app = FastAPI(title="dsh-asr-tiny reference ASR")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

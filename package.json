@@ -1,6 +1,6 @@
 {
-  "name": "dsh-plugin-asr-zh-tiny",
-  "version": "0.2.1",
+  "name": "dsh-asr-tiny",
+  "version": "0.0.1",
   "description": "一个较小的中文语音识别插件：既能把语音转成文字，也能把录音和校正文本保存为训练样本，用于微调你自己的语音模型。",
   "type": "module",
   "main": "lib/index.js",
