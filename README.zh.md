@@ -1,7 +1,7 @@
 # dsh-asr-tiny
 
-[![version](https://img.shields.io/badge/version-0.0.1-5b8def)](https://github.com/jame9898/dsh-asr-tiny)
-[![DSH](https://img.shields.io/badge/DSH-%3C%3D0.2.1--rc.2-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
+[![version](https://img.shields.io/badge/version-0.0.2-5b8def)](https://github.com/jame9898/dsh-asr-tiny)
+[![DSH](https://img.shields.io/badge/DSH-%3E%3D0.1.0--rc.3%20%3C0.3.0-5b8def)](https://github.com/deepseek-ai/deepseek-harness)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 [English](./README.md) | 中文

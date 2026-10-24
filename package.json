@@ -1,6 +1,6 @@
 {
   "name": "dsh-asr-tiny",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "一个较小的中文语音识别插件：既能把语音转成文字，也能把录音和校正文本保存为训练样本，用于微调你自己的语音模型。",
   "type": "module",
   "main": "lib/index.js",
@@ -56,10 +56,10 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": ">=4.0.1-rc.1 <4.1.0",
-    "@deepseek-ai/dsh-client-locale": "<=0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-runtime": "<=0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-conversation": "<=0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "<=0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-locale": ">=0.1.0-rc.3 <0.3.0",
+    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.3 <0.3.0",
+    "@deepseek-ai/dsh-client-ui-conversation": ">=0.1.0-rc.3 <0.3.0",
+    "@deepseek-ai/dsh-client-ui-slots": ">=0.1.0-rc.3 <0.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
